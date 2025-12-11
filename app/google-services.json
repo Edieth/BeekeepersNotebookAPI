@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "391330469262",
+    "project_id": "beekeepersnotebook",
+    "storage_bucket": "beekeepersnotebook.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:391330469262:android:73a3f12dec2c087dcc40df",
+        "android_client_info": {
+          "package_name": "cr.ac.utn.beekeepersnotebook"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7xH29j4vhvdSMNXlrSQL2Sk00jEk9bB8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
