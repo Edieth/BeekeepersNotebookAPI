@@ -37,6 +37,7 @@ class InventoryActivity : AppCompatActivity() {
         }
 
         personId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        Toast.makeText(this, "UID actual: $personId", Toast.LENGTH_SHORT).show()
 
         controller = InventoryController(this)
 
@@ -59,13 +60,11 @@ class InventoryActivity : AppCompatActivity() {
     }
 
     private fun loadItems() {
-        controller.getAll { list ->
+        controller.getAllByPerson(personId) { list ->
             items.clear()
-            items.addAll(list.filter { it.PersonID == personId })
+            items.addAll(list)
             adapter.notifyDataSetChanged()
-            Toast.makeText(this, "Inventario cargado: ${items.size} items", Toast.LENGTH_SHORT).show()
-
-        }
+            Toast.makeText(this, "Inventario cargado: ${items.size} items", Toast.LENGTH_SHORT).show() }
     }
 
     private fun addItemDialog() {
@@ -78,37 +77,65 @@ class InventoryActivity : AppCompatActivity() {
             .setTitle("Nuevo material")
             .setView(view)
             .setPositiveButton("Guardar") { _, _ ->
-                val name = txtName.text.toString().trim()
-                val tStr = txtTotal.text.toString().trim()
-                val typeStr = txtDataType.text.toString().trim()
+                try {
+                    val name = txtName.text.toString().trim()
+                    val tStr = txtTotal.text.toString().trim()
+                    val typeStr = txtDataType.text.toString().trim()
 
-                if (name.isEmpty() || tStr.isEmpty()) {
-                    Toast.makeText(this, "Nombre y total son obligatorios", Toast.LENGTH_SHORT).show()
-                    return@setPositiveButton
-                }
-
-                val total = tStr.toIntOrNull() ?: 0
-                val inventoryDataType = typeStr // aquí es STRING, no int
-
-                val item = InventoryItem().apply {
-                    PersonID = personId
-                    Name = name
-                    InventoryTotalQuantity = total
-                    InventoryDataType= inventoryDataType
-                }
-
-                controller.addItem(item) { ok, msg ->
-                    if (ok) {
-                        Toast.makeText(this, "Material guardado", Toast.LENGTH_SHORT).show()
-                        loadItems()
-                    } else {
-                        Toast.makeText(this, msg ?: "Error al guardar material", Toast.LENGTH_LONG).show()
+                    if (name.isEmpty() || tStr.isEmpty()) {
+                        Toast.makeText(
+                            this,
+                            "Nombre y total son obligatorios",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@setPositiveButton
                     }
+
+                    val total = tStr.toIntOrNull()
+                    if (total == null) {
+                        Toast.makeText(
+                            this,
+                            "El total debe ser un número",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@setPositiveButton
+                    }
+
+                    val inventoryDataType = typeStr
+
+                    val item = InventoryItem().apply {
+                        PersonID = personId
+                        Name = name
+                        InventoryTotalQuantity = total
+                        InventoryDataType = inventoryDataType
+                    }
+
+                    controller.addItem(item) { ok, msg ->
+                        if (ok) {
+                            Toast.makeText(this, "Material guardado", Toast.LENGTH_SHORT).show()
+                            loadItems()
+                        } else {
+                            Toast.makeText(
+                                this,
+                                msg ?: "Error al guardar material",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                } catch (e: Exception) {
+                    // Si algo raro pasa, que NO se caiga la app
+                    e.printStackTrace()
+                    Toast.makeText(
+                        this,
+                        "Error inesperado al guardar: ${e.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
             .setNegativeButton("Cancelar", null)
             .show()
     }
+
 
     private fun editItemDialog(item: InventoryItem) {
         val view = layoutInflater.inflate(R.layout.dialog_inventory, null)

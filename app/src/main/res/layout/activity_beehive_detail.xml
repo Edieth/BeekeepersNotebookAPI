@@ -12,8 +12,7 @@
         android:orientation="vertical"
         android:padding="24dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#FF9800">
+        android:layout_height="match_parent">
 
 
         <TextView
@@ -60,7 +59,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
-            android:text="Guardar cambios" />
+            android:text="Guardar cambios"
+            android:backgroundTint="#FF9800"/>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -8,6 +8,7 @@ import android.provider.MediaStore
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -15,8 +16,12 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import java.io.ByteArrayOutputStream
+import android.util.Base64
+import android.widget.ImageButton
 
 class SingUpActivity : AppCompatActivity() {
+
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
 
@@ -24,19 +29,20 @@ class SingUpActivity : AppCompatActivity() {
     private lateinit var etPassword: EditText
     private lateinit var etConfirmPassword: EditText
     private lateinit var etEmail: EditText
-    private lateinit var btnSubmit: Button
-    private lateinit var btnCancel: Button
-    private lateinit var btnSelectPhoto: Button
+    private lateinit var etPhone: EditText
     private lateinit var etFirstLastName: EditText
     private lateinit var etSecondLastName: EditText
+    private lateinit var btnSubmit: Button
+    private lateinit var btnCancel: Button
+    private lateinit var btnSelectPhoto: ImageButton
+    private lateinit var imgPhoto: ImageView
+
     private var selectedPhotoBitmap: Bitmap? = null
 
     private val selectImageLauncher =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             if (uri != null) {
-                val bmp = MediaStore.Images
-                    .Media
-                    .getBitmap(this.contentResolver, uri)
+                val bmp = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
                 selectedPhotoBitmap = bmp
                 imgPhoto.setImageBitmap(bmp)
             }
@@ -47,14 +53,12 @@ class SingUpActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_sing_up)
 
-        // 🔹 ESTA lambda solo ajusta padding y devuelve insets
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
 
-        // 🔹 TODA la inicialización va FUERA de la lambda
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
 
@@ -62,21 +66,20 @@ class SingUpActivity : AppCompatActivity() {
         etPassword = findViewById(R.id.etPassword)
         etConfirmPassword = findViewById(R.id.etConfirmPassword)
         etEmail = findViewById(R.id.etEmail)
-        btnSubmit = findViewById(R.id.btnSubmit)
-        btnCancel = findViewById(R.id.btnCancel)
         etFirstLastName = findViewById(R.id.etFirstLastName)
         etSecondLastName = findViewById(R.id.etSecondLastName)
+        etPhone = findViewById(R.id.etPhone)
         imgPhoto = findViewById(R.id.imgPhoto)
+        btnSubmit = findViewById(R.id.btnSubmit)
+        btnCancel = findViewById(R.id.btnCancel)
         btnSelectPhoto = findViewById(R.id.btnSelectPhoto)
-        btnSubmit.setOnClickListener { doSignUp() }
-        btnCancel.setOnClickListener { finish() }
+
         btnSelectPhoto.setOnClickListener {
             selectImageLauncher.launch("image/*")
         }
 
-        btnSubmit.setOnClickListener {
-            doSignUp()
-        }
+        btnSubmit.setOnClickListener { doSignUp() }
+        btnCancel.setOnClickListener { finish() }
     }
 
     private fun doSignUp() {
@@ -86,9 +89,12 @@ class SingUpActivity : AppCompatActivity() {
         val confirm = etConfirmPassword.text.toString().trim()
         val firstLastName = etFirstLastName.text.toString().trim()
         val secondLastName = etSecondLastName.text.toString().trim()
+        val phone = etPhone.text.toString().trim()
 
-
-        if (username.isEmpty() || email.isEmpty() || password.isEmpty() || confirm.isEmpty()) {
+        if (username.isEmpty() || email.isEmpty() || password.isEmpty()
+            || confirm.isEmpty() || firstLastName.isEmpty()
+            || secondLastName.isEmpty() || phone.isEmpty()
+        ) {
             Toast.makeText(this, "Complete todos los campos", Toast.LENGTH_SHORT).show()
             return
         }
@@ -115,25 +121,27 @@ class SingUpActivity : AppCompatActivity() {
                     return@addOnSuccessListener
                 }
 
-                // 🔹 Creamos Person usando TU Entity.Person
+                val photoBase64 = selectedPhotoBitmap?.let { bitmapToBase64(it) } ?: ""
+
                 val person = Person(
                     id = user.uid,
                     name = username,
-                    fLastName = "",
-                    sLastName = "",
+                    fLastName = firstLastName,
+                    sLastName = secondLastName,
                     email = email,
                     password = password,
-                    phoneperson = "",
-                    photo = null
-                )
+                    phoneperson = phone,
+                    photo = selectedPhotoBitmap,
+                    photoBase64 = photoBase64
+                ).apply {
+                    // solo por claridad: Photo es Bitmap (no se guarda)
+                    this.Photo = selectedPhotoBitmap
+                }
 
-                // Guardamos el Person en Firestore
-                db.collection("persons")
+                db.collection("person")
                     .document(user.uid)
                     .set(person)
                     .addOnSuccessListener {
-
-                        // Enviamos verificación de correo
                         user.sendEmailVerification()
                             .addOnSuccessListener {
                                 Toast.makeText(
@@ -170,5 +178,12 @@ class SingUpActivity : AppCompatActivity() {
                     Toast.LENGTH_LONG
                 ).show()
             }
+    }
+
+    private fun bitmapToBase64(bitmap: Bitmap): String {
+        val stream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream)
+        val bytes = stream.toByteArray()
+        return Base64.encodeToString(bytes, Base64.DEFAULT)
     }
 }

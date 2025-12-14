@@ -62,7 +62,7 @@ class BeehiveDetailActivity : AppCompatActivity() {
             return
         }
         loadHiveData()
-
+        loadTotalHarvest()
         btnSaveChanges.setOnClickListener {
             saveQueenChanges()
         }

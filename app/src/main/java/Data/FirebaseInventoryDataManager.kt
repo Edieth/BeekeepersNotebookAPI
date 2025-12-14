@@ -45,11 +45,20 @@ class FirebaseInventoryDataManager: IDataManager<InventoryItem> {
         collection
             .get()
             .addOnSuccessListener { result ->
-                val list = result.mapNotNull { it.toObject(InventoryItem::class.java) }
-                onResult(list)
+                try {
+                    val list = result.mapNotNull { it.toObject(InventoryItem::class.java) }
+                    onResult(list)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    onResult(emptyList())
+                }
             }
-            .addOnFailureListener { onResult(emptyList()) }
+            .addOnFailureListener {
+                it.printStackTrace()
+                onResult(emptyList())
+            }
     }
+
     override fun getByFullName(name: String, onResult: (InventoryItem?) -> Unit) {
         collection
             .whereEqualTo("name", name)  // campo 'name' del InventoryItem
@@ -62,4 +71,25 @@ class FirebaseInventoryDataManager: IDataManager<InventoryItem> {
                 onResult(null)
             }
     }
+    fun getAllByPerson(personId: String, onResult: (List<InventoryItem>) -> Unit) {
+        collection
+            .whereEqualTo("personID", personId)   // <-- usa exactamente el nombre del campo
+            .get()
+            .addOnSuccessListener { result ->
+                try {
+                    val list = result.mapNotNull { it.toObject(InventoryItem::class.java) }
+                    onResult(list)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    onResult(emptyList())
+                }
+            }
+            .addOnFailureListener {
+                it.printStackTrace()
+                onResult(emptyList())
+            }
+    }
+
+
+
 }

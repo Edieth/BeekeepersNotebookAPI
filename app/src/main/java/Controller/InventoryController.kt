@@ -43,5 +43,11 @@ class InventoryController {
     fun getById(id: String, onResult: (InventoryItem?) -> Unit) {
         dataManager.getById(id, onResult)
     }
+    fun getAllByPerson(personId: String, onResult: (List<InventoryItem>) -> Unit) {
+        (dataManager as? FirebaseInventoryDataManager)
+            ?.getAllByPerson(personId, onResult)
+            ?: getAll(onResult)
+    }
+
 
 }

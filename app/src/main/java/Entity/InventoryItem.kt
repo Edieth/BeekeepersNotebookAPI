@@ -1,14 +1,14 @@
 package Entity
 
 class InventoryItem() {
-    var id: String = ""
-    var personId: String = ""
+    private var id: String = ""
+    private var personId: String = ""
 
     // Nombre del material
-    var nameInventoryItem: String = ""
+    private var nameInventoryItem: String = ""
 
     // Cantidad total
-    var inventoryItemTotalQuantity: Int = 0
+    private var inventoryItemTotalQuantity: Int = 0
     private var inventoryDataType: String = ""
 
     constructor(

@@ -60,6 +60,11 @@ class PersonController {
             throw Exception(context.getString(R.string.ErrorMsgGetById))
         }
     }
+    fun getAll(onResult: (List<Person>) -> Unit) {
+        dataManager.getAll { list ->
+            onResult(list)
+        }
+    }
 
     fun getByFullName(fullname: String, onResult: (Person?) -> Unit) {
         try {

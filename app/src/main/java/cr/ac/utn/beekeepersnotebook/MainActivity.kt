@@ -3,6 +3,8 @@ package cr.ac.utn.beekeepersnotebook
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.widget.ImageButton
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -14,6 +16,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnZones: Button
     private lateinit var btnLogout: Button
     private lateinit var btnInventory: Button
+    private lateinit var btnProfile: ImageButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,18 +27,21 @@ class MainActivity : AppCompatActivity() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
 
-            val user = FirebaseAuth.getInstance().currentUser
-            if (user == null || !user.isEmailVerified) {
-                startActivity(Intent(this, LoginActivity::class.java))
-                finish()
-            }
-
             insets
         }
         btnInventory = findViewById(R.id.btnInventory)
         btnZones = findViewById(R.id.btnZones2)
         btnLogout = findViewById(R.id.btnLogout)
+        btnProfile = findViewById(R.id.btnProfile)
 
+        val btnProfile = findViewById<ImageButton>(R.id.btnProfile)
+
+        btnProfile.setOnClickListener {
+            val u = FirebaseAuth.getInstance().currentUser
+            
+
+            startActivity(Intent(this, ProfileActivity::class.java))
+        }
         btnInventory.setOnClickListener {
             val intent = Intent(this, InventoryActivity::class.java)
             startActivity(intent)
@@ -50,4 +56,21 @@ class MainActivity : AppCompatActivity() {
             finish()
         }
     }
+    override fun onStart() {
+        super.onStart()
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user == null) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+            return
+        }
+        // Si quieres obligar verificación, recarga primero:
+        user.reload().addOnCompleteListener {
+            if (!user.isEmailVerified) {
+                startActivity(Intent(this, VerificationActivity::class.java))
+                finish()
+            }
+        }
+    }
+
 }

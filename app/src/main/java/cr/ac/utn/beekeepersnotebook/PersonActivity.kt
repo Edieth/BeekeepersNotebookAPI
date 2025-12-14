@@ -27,6 +27,7 @@ import androidx.core.view.WindowInsetsCompat
 import java.time.LocalDate
 import java.util.Calendar
 import Util.Util
+import android.graphics.ImageDecoder
 
 
 class PersonActivity : AppCompatActivity() {
@@ -45,6 +46,7 @@ class PersonActivity : AppCompatActivity() {
     private lateinit var menuitemDelete: MenuItem
     private var isEditMode: Boolean = false
     private var currentPerson: Person? = null
+    private var selectedPhotoBitmap: Bitmap? = null
 
     // =========================
     // ActivityResult para cámara y galería
@@ -53,19 +55,21 @@ class PersonActivity : AppCompatActivity() {
     private val cameraPreviewLauncher =
         registerForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap: Bitmap? ->
             if (bitmap != null) {
+                selectedPhotoBitmap = bitmap
                 imgPhoto.setImageBitmap(bitmap)
             }
         }
 
     private val selectImageLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                val data: Intent? = result.data
-                data?.data?.let { uri ->
-                    imgPhoto.setImageURI(uri)
-                }
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            if (uri != null) {
+                val bmp = MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
+                selectedPhotoBitmap = bmp
+                imgPhoto.setImageBitmap(bmp)
             }
         }
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,7 +83,6 @@ class PersonActivity : AppCompatActivity() {
         }
 
         personController = PersonController(this)
-
         // Vincular controles del layout
         txtId = findViewById(R.id.txtId_person)
         txtName = findViewById(R.id.txtName_person)
@@ -247,6 +250,7 @@ class PersonActivity : AppCompatActivity() {
     // =========================
 
     private fun savePerson() {
+
         try {
             if (!isValidatedData()) {
                 Toast.makeText(this, R.string.MsgMissingData, Toast.LENGTH_LONG).show()
@@ -369,6 +373,6 @@ class PersonActivity : AppCompatActivity() {
     private fun selectPhoto() {
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
         intent.type = "image/*"
-        selectImageLauncher.launch(intent)
+        selectImageLauncher.launch(Intent.ACTION_PICK)
     }
 }

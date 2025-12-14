@@ -18,8 +18,6 @@ class SplashActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
 
-
-
         }
         val auth = FirebaseAuth.getInstance()
         val user = auth.currentUser

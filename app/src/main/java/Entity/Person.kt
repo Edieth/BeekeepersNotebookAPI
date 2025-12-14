@@ -1,6 +1,7 @@
 package Entity
 
 import android.graphics.Bitmap
+import com.google.firebase.firestore.Exclude
 import java.util.Date
 
 class Person {
@@ -12,16 +13,27 @@ class Person {
     private var email: String = ""
     private var password: String = ""
     private var phonePerson: String = ""
-    private var photo: Bitmap? = null
 
+    // Bitmap solo en memoria
+    @get:Exclude
+    @set:Exclude
+    var Photo: Bitmap? = null
+
+    var photoBase64: String = ""
 
     constructor()
 
     constructor(
-        id: String, name: String, fLastName: String,
-        sLastName: String, email: String, password: String,
-        phoneperson: String, photo: Bitmap?)
-    {
+        id: String,
+        name: String,
+        fLastName: String,
+        sLastName: String,
+        email: String,
+        password: String,
+        phoneperson: String,
+        photo: Bitmap?,
+        photoBase64: String = ""
+    ) {
         this.uid = id
         this.name = name
         this.fLastName = fLastName
@@ -29,7 +41,8 @@ class Person {
         this.email = email
         this.password = password
         this.phonePerson = phoneperson
-        this.photo = photo
+        this.Photo = photo
+        this.photoBase64 = photoBase64
     }
 
     var ID: String
@@ -59,11 +72,7 @@ class Person {
     var PhonePerson: String
         get() = this.phonePerson
         set(value) { this.phonePerson = value }
-    var Photo: Bitmap?
-        get() = this.photo
-        set(value) { this.photo = value }
 
-
-
-    fun FullName(): String = "$name $fLastName $sLastName $email $Password $PhonePerson"
+    fun FullName(): String =
+        "$Name $FLastName $SLastName"
 }

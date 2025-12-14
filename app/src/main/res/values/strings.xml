@@ -49,5 +49,6 @@
     <string name="TextSave">Guardar</string>
     <string name="TextEdit">Editar</string>
     <string name="TextEnterEmaiPassw">Complete correo electrónico y contraseña</string>
+    <string name="Textprofile">Perfil usuario</string>
 
 </resources>

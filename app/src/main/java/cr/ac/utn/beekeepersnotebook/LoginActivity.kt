@@ -39,6 +39,8 @@ class LoginActivity : AppCompatActivity() {
 
         btnLogin.setOnClickListener { doLogin() }
         tvSignUp.setOnClickListener {
+            Toast.makeText(this, "CLICK en Registrate", Toast.LENGTH_SHORT).show()
+           // startActivity(Intent(this, SingUpActivity::class.java))
             startActivity(Intent(this, SingUpActivity::class.java))
         }
         tvForgot.setOnClickListener {
